@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "lib": ["deno.ns", "dom"],
+    "strict": true
+  },
+  "lint": {
+    "rules": {
+      "tags": ["recommended"]
+    }
+  },
+  "fmt": {
+    "semiColons": true,
+    "singleQuote": false
+  }
+}
