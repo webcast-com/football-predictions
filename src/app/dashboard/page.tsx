@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { authFetch } from "@/lib/client-auth";
 import { PredictionCard, CardSkeleton, type PredictionDTO } from "@/components/predictions-ui";
 
 type Stats = {
@@ -32,8 +33,8 @@ export default function OverviewPage() {
   useEffect(() => {
     (async () => {
       const [s, p] = await Promise.all([
-        fetch("/api/stats").then((r) => r.json()),
-        fetch("/api/predictions").then((r) => r.json()),
+        authFetch("/api/stats").then((r) => r.json()),
+        authFetch("/api/predictions").then((r) => r.json()),
       ]);
       setStats(s);
       setRecent((p.predictions || []).slice(0, 6));

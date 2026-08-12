@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { authFetch } from "@/lib/client-auth";
 import { PredictionCard, CardSkeleton, type PredictionDTO } from "@/components/predictions-ui";
 
 const FILTERS = ["all", "pending", "won", "lost", "premium"] as const;
@@ -16,7 +17,7 @@ export default function PredictionsPage() {
 
   useEffect(() => {
     (async () => {
-      const res = await fetch("/api/predictions");
+      const res = await authFetch("/api/predictions");
       const data = await res.json();
       setItems(data.predictions || []);
       setLoading(false);

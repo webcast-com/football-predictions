@@ -5,8 +5,25 @@ import { users, sessions } from "@/db/schema";
 import { eq, and, gt } from "drizzle-orm";
 import type { User } from "@/db/schema";
 
-const SESSION_COOKIE = "fp_session";
+export const SESSION_COOKIE = "fp_session";
 const SESSION_DAYS = 30;
+
+/**
+ * Extract a session token from the `Authorization: Bearer <token>` header.
+ *
+ * The session cookie is the primary auth channel, but embedded previews
+ * (cross-site iframes) may block third-party cookies entirely. In that case
+ * the client keeps the session token in storage and sends it on every request
+ * via this header, so auth keeps working without cookies.
+ */
+function tokenFromHeaders(headers?: Headers | null): string | null {
+  if (!headers) return null;
+  const auth = headers.get("authorization");
+  if (!auth) return null;
+  const [scheme, ...rest] = auth.trim().split(/\s+/);
+  if (scheme?.toLowerCase() !== "bearer") return null;
+  return rest.join(" ") || null;
+}
 
 /**
  * Cookie attributes for the session cookie.
@@ -43,14 +60,17 @@ export async function createSession(userId: number): Promise<string> {
   return session.token;
 }
 
-export async function destroySession(): Promise<void> {
+export async function destroySession(headers?: Headers | null): Promise<void> {
   const jar = await cookies();
-  const token = jar.get(SESSION_COOKIE)?.value;
+  const cookieToken = jar.get(SESSION_COOKIE)?.value;
+  const token = cookieToken || tokenFromHeaders(headers);
   if (token) {
     await db.delete(sessions).where(eq(sessions.token, token));
     // Deleting a partitioned cookie requires the same attributes (including
     // `Partitioned`), otherwise the browser keeps the cookie around.
-    jar.delete({ name: SESSION_COOKIE, ...sessionCookieOptions(new Date(0)) });
+    if (cookieToken) {
+      jar.delete({ name: SESSION_COOKIE, ...sessionCookieOptions(new Date(0)) });
+    }
   }
 }
 
@@ -70,9 +90,11 @@ export function verifyPassword(password: string, stored: string): boolean {
   return timingSafeEqual(hashBuffer, derived);
 }
 
-export async function getCurrentUser(): Promise<User | null> {
+export async function getCurrentUser(
+  headers?: Headers | null
+): Promise<User | null> {
   const jar = await cookies();
-  const token = jar.get(SESSION_COOKIE)?.value;
+  const token = jar.get(SESSION_COOKIE)?.value || tokenFromHeaders(headers);
   if (!token) return null;
   const rows = await db
     .select()

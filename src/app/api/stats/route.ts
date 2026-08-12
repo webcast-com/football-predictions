@@ -4,8 +4,8 @@ import { getCurrentUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  const user = await getCurrentUser();
+export async function GET(req: Request) {
+  const user = await getCurrentUser(req.headers);
   if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
   const all = await db.select().from(predictions);

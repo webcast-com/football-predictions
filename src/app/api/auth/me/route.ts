@@ -4,8 +4,8 @@ import { hoursLeft, PREMIUM_HOURS, PREMIUM_PRICE, PREMIUM_CURRENCY } from "@/lib
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  const user = await getCurrentUser();
+export async function GET(req: Request) {
+  const user = await getCurrentUser(req.headers);
   if (!user) return Response.json({ user: null });
   return Response.json({
     user: {

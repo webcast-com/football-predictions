@@ -55,7 +55,7 @@ async function sample(base: string, path: string, cookie: string): Promise<Pick<
 }
 
 export async function GET(req: Request) {
-  const user = await getCurrentUser();
+  const user = await getCurrentUser(req.headers);
   if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
   const { searchParams } = new URL(req.url);

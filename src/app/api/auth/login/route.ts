@@ -61,10 +61,11 @@ export async function POST(req: Request) {
             .returning();
         }
         const user = rows[0];
-        await createSession(user.id);
+        const sessionToken = await createSession(user.id);
         return Response.json({
           user: { id: user.id, name: user.name, email: user.email, plan: user.plan },
           provider: "supabase",
+          sessionToken,
         });
       }
       // Otherwise fall through to the local auth path below.
@@ -83,10 +84,11 @@ export async function POST(req: Request) {
         { status: 401 }
       );
     }
-    await createSession(user.id);
+    const sessionToken = await createSession(user.id);
     return Response.json({
       user: { id: user.id, name: user.name, email: user.email, plan: user.plan },
       provider: "local",
+      sessionToken,
     });
   } catch (e) {
     console.error(e);

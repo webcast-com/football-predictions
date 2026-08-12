@@ -1,14 +1,19 @@
 import type { ReactNode } from "react";
-import { redirect } from "next/navigation";
 import { getCurrentUser, isPremiumActive } from "@/lib/auth";
 import { ensureSeed } from "@/lib/seed";
 import Sidebar from "@/components/Sidebar";
+import DashboardGate from "@/components/DashboardGate";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  if (!user) {
+    // No session cookie (e.g. embedded preview blocking third-party cookies).
+    // Let the client re-authenticate via the stored session token instead of
+    // bouncing straight back to /login.
+    return <DashboardGate>{children}</DashboardGate>;
+  }
   await ensureSeed();
 
   return (

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { authFetch } from "@/lib/client-auth";
 
 type Row = {
   path: string;
@@ -48,7 +49,7 @@ export default function DiagnosticsPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`/api/diagnostics?samples=${samples}`, { cache: "no-store" });
+      const res = await authFetch(`/api/diagnostics?samples=${samples}`, { cache: "no-store" });
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || "Failed to run diagnostics.");

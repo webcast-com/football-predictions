@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 // GET: list predictions. ?scope=mine returns only the user's own.
 export async function GET(req: Request) {
-  const user = await getCurrentUser();
+  const user = await getCurrentUser(req.headers);
   const { searchParams } = new URL(req.url);
   const scope = searchParams.get("scope");
   const premium = isPremiumActive(user);
@@ -54,7 +54,7 @@ export async function GET(req: Request) {
 
 // POST: create a prediction
 export async function POST(req: Request) {
-  const user = await getCurrentUser();
+  const user = await getCurrentUser(req.headers);
   if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
   try {
     const body = await req.json();

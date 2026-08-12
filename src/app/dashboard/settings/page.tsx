@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { authFetch, clearSessionToken } from "@/lib/client-auth";
 
 type Me = {
   name: string;
@@ -16,13 +17,14 @@ export default function SettingsPage() {
   const [me, setMe] = useState<Me | null>(null);
 
   useEffect(() => {
-    fetch("/api/auth/me")
+    authFetch("/api/auth/me")
       .then((r) => r.json())
       .then((d) => setMe(d.user));
   }, []);
 
   async function logout() {
-    await fetch("/api/auth/logout", { method: "POST" });
+    await authFetch("/api/auth/logout", { method: "POST" });
+    clearSessionToken();
     router.push("/login");
     router.refresh();
   }
