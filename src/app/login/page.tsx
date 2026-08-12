@@ -26,6 +26,17 @@ export default function LoginPage() {
       setError(data.error || "Login failed.");
       return;
     }
+    // Confirm the browser accepted the session cookie before navigating,
+    // so a blocked cookie shows a clear message instead of a silent bounce.
+    const me = await fetch("/api/auth/me", { cache: "no-store" })
+      .then((r) => r.json())
+      .catch(() => null);
+    if (!me?.user) {
+      setError(
+        "Signed in, but your browser blocked the session cookie. Please allow cookies for this site (or open the preview in a new tab) and try again."
+      );
+      return;
+    }
     router.push("/dashboard");
     router.refresh();
   }

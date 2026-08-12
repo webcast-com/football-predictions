@@ -51,7 +51,7 @@ Built with **Next.js 16 (App Router) · Drizzle ORM · PostgreSQL/Supabase · Ta
 
 ```bash
 npm install
-cp .env .env.local    # then edit values
+cp .env.example .env.local    # then edit values
 ```
 
 ### 2. Environment variables
