@@ -13,8 +13,8 @@ export const dynamic = "force-dynamic";
 
 // Fallback upgrade used only when Paystack live keys are not configured,
 // so the premium experience remains testable in the demo environment.
-export async function POST() {
-  const user = await getCurrentUser();
+export async function POST(req: Request) {
+  const user = await getCurrentUser(req.headers);
   if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
   if (process.env.PAYSTACK_SECRET_KEY) {

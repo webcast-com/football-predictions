@@ -9,7 +9,7 @@ export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const user = await getCurrentUser();
+  const user = await getCurrentUser(req.headers);
   if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
   const predictionId = Number(id);
@@ -49,10 +49,10 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const user = await getCurrentUser();
+  const user = await getCurrentUser(req.headers);
   if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await params;
   const predictionId = Number(id);

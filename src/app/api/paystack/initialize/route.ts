@@ -10,7 +10,7 @@ import {
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
-  const user = await getCurrentUser();
+  const user = await getCurrentUser(req.headers);
   if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
   const secret = process.env.PAYSTACK_SECRET_KEY;

@@ -21,6 +21,9 @@ yarn-error.log*
 .env
 .env*.local
 
+# local embedded postgres data (scripts/db-up.mjs)
+/.pgdata/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

@@ -22,7 +22,7 @@ Built with **Next.js 16 (App Router) · Drizzle ORM · PostgreSQL/Supabase · Ta
 - **Countdown UI** — progress bar of remaining premium time, stacking "Add +24h" checkout
 
 ### For developers
-- **Auth** — Supabase Auth when configured, with automatic fallback to built-in scrypt-hashed Postgres auth
+- **Auth** — Supabase Auth when configured, with automatic fallback to built-in scrypt-hashed Postgres auth. Sessions are purely token-based (no cookies): the session token is sent as an `Authorization: Bearer` header, so login works inside embedded previews and sandboxed iframes where cookies are blocked
 - **Payments** — Paystack live API: hosted checkout, callback verification, and a **HMAC-SHA512 verified webhook**
 - **Supabase Edge Functions** — deployable `predictions` API, `predictions-notify`, and `premium-watchdog` (expiry cron)
 - **SEO** — sitemap.xml, robots.txt, Open Graph image (via `next/og`), Twitter cards, canonicals

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { authFetch } from "@/lib/client-auth";
 import type { PredictionDTO } from "@/components/predictions-ui";
 
 type Filter = "all" | "won" | "lost";
@@ -50,7 +51,7 @@ export default function HistoryPage() {
 
   useEffect(() => {
     (async () => {
-      const res = await fetch("/api/predictions");
+      const res = await authFetch("/api/predictions");
       const data = await res.json();
       const settled = (data.predictions || [])
         .filter((p: PredictionDTO) => p.status === "won" || p.status === "lost")

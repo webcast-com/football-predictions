@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { authFetch, setSessionToken, clearSessionToken } from "@/lib/client-auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,30 +16,41 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     setLoading(true);
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-    const data = await res.json();
-    setLoading(false);
-    if (!res.ok) {
-      setError(data.error || "Login failed.");
-      return;
+    try {
+      const res = await authFetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Login failed.");
+        return;
+      }
+      // Keep the session token client-side and send it on every request as an
+      // Authorization header — sessions are token-based, no cookies involved.
+      if (data.sessionToken) {
+        setSessionToken(data.sessionToken);
+      }
+      // Confirm the session works before navigating, so a failure shows a
+      // clear message instead of a silent bounce.
+      const me = await authFetch("/api/auth/me", { cache: "no-store" })
+        .then((r) => r.json())
+        .catch(() => null);
+      if (!me?.user) {
+        clearSessionToken();
+        setError(
+          "Signed in, but the session could not be confirmed in this browser. Try again or use a different browser."
+        );
+        return;
+      }
+      router.push("/dashboard");
+      router.refresh();
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    // Confirm the browser accepted the session cookie before navigating,
-    // so a blocked cookie shows a clear message instead of a silent bounce.
-    const me = await fetch("/api/auth/me", { cache: "no-store" })
-      .then((r) => r.json())
-      .catch(() => null);
-    if (!me?.user) {
-      setError(
-        "Signed in, but your browser blocked the session cookie. Please allow cookies for this site (or open the preview in a new tab) and try again."
-      );
-      return;
-    }
-    router.push("/dashboard");
-    router.refresh();
   }
 
   return (

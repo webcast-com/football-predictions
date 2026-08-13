@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { authFetch } from "@/lib/client-auth";
 import {
   PredictionCard,
   PredictionModal,
@@ -23,7 +24,7 @@ export default function MyTipsPage() {
   }
 
   async function load() {
-    const res = await fetch("/api/predictions?scope=mine");
+    const res = await authFetch("/api/predictions?scope=mine");
     const data = await res.json();
     setItems(data.predictions || []);
     setLoading(false);
@@ -51,7 +52,7 @@ export default function MyTipsPage() {
         // optimistic update
         const optimistic = { ...editing, ...payload } as PredictionDTO;
         setItems((prev) => prev.map((p) => (p.id === editing.id ? optimistic : p)));
-        const res = await fetch(`/api/predictions/${editing.id}`, {
+        const res = await authFetch(`/api/predictions/${editing.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -61,7 +62,7 @@ export default function MyTipsPage() {
         setItems((prev) => prev.map((p) => (p.id === editing.id ? data.prediction : p)));
         flash("Prediction updated");
       } else {
-        const res = await fetch("/api/predictions", {
+        const res = await authFetch("/api/predictions", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -84,7 +85,7 @@ export default function MyTipsPage() {
     if (!confirm(`Delete ${p.homeTeam} vs ${p.awayTeam}?`)) return;
     const prev = items;
     setItems((cur) => cur.filter((x) => x.id !== p.id)); // optimistic
-    const res = await fetch(`/api/predictions/${p.id}`, { method: "DELETE" });
+    const res = await authFetch(`/api/predictions/${p.id}`, { method: "DELETE" });
     if (!res.ok) {
       setItems(prev);
       flash("Failed to delete");

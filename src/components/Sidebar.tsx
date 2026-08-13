@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import { authFetch, clearSessionToken } from "@/lib/client-auth";
 
 const NAV = [
   { href: "/dashboard", label: "Overview", icon: "📊" },
@@ -28,7 +29,8 @@ export default function Sidebar({
   const [open, setOpen] = useState(false);
 
   async function logout() {
-    await fetch("/api/auth/logout", { method: "POST" });
+    await authFetch("/api/auth/logout", { method: "POST" });
+    clearSessionToken();
     router.push("/login");
     router.refresh();
   }

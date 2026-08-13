@@ -30,7 +30,7 @@ const sections = [
   },
   {
     title: "Security",
-    body: "Connections are encrypted in transit (HTTPS/TLS). Passwords are stored using salted scrypt hashes, sessions use http-only cookies, and API keys never leave the server. Access to production data is restricted and audited.",
+    body: "Connections are encrypted in transit (HTTPS/TLS). Passwords are stored using salted scrypt hashes, sessions are token-based (no cookies) with tokens stored in your browser's session storage, and API keys never leave the server. Access to production data is restricted and audited.",
   },
 ];
 

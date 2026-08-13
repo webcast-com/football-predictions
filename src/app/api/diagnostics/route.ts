@@ -26,14 +26,14 @@ type Result = {
   ok: boolean;
 };
 
-async function sample(base: string, path: string, cookie: string): Promise<Pick<Result, "status" | "ttfb" | "total" | "bytes" | "ok">> {
+async function sample(base: string, path: string, auth: string): Promise<Pick<Result, "status" | "ttfb" | "total" | "bytes" | "ok">> {
   const url = `${base}${path}`;
   const t0 = performance.now();
   try {
     const res = await fetch(url, {
       headers: {
         "User-Agent": "Predikt-Diagnostics/1.0",
-        cookie,
+        ...(auth ? { Authorization: auth } : {}),
       },
       redirect: "manual",
       cache: "no-store",
@@ -55,21 +55,21 @@ async function sample(base: string, path: string, cookie: string): Promise<Pick<
 }
 
 export async function GET(req: Request) {
-  const user = await getCurrentUser();
+  const user = await getCurrentUser(req.headers);
   if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
   const { searchParams } = new URL(req.url);
   const samples = Math.max(1, Math.min(10, Number(searchParams.get("samples") || 3)));
 
   const base = new URL(req.url).origin;
-  const cookie = req.headers.get("cookie") || "";
+  const auth = req.headers.get("authorization") || "";
 
   const started = Date.now();
   const results: Result[] = [];
 
   for (const r of ROUTES) {
     const runs = [];
-    for (let i = 0; i < samples; i++) runs.push(await sample(base, r.path, cookie));
+    for (let i = 0; i < samples; i++) runs.push(await sample(base, r.path, auth));
     const totals = runs.map((x) => x.total);
     const ttfbs = runs.map((x) => x.ttfb);
     const avg = (xs: number[]) => Math.round(xs.reduce((s, n) => s + n, 0) / xs.length);

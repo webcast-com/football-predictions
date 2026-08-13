@@ -32,30 +32,51 @@ export async function POST(req: Request) {
     }
 
     // ── Supabase Auth path ──────────────────────────────────────────
+    // Attempted first when Supabase is configured; on any failure (unreachable
+    // project, rate limits, invalid keys…) we fall through to the built-in
+    // local registration so signup keeps working without Supabase.
     if (isSupabaseEnabled()) {
-      const supabase = getSupabase();
-      const { error } = await supabase.auth.signUp({
-        email: normalizedEmail,
-        password: String(password),
-        options: { data: { name: displayName } },
-      });
-      if (error) {
-        return Response.json({ error: error.message }, { status: 400 });
-      }
-      // Mirror the profile locally for plan/subscription tracking.
-      const [user] = await db
-        .insert(users)
-        .values({
-          name: displayName,
+      let registered = false;
+      try {
+        const supabase = getSupabase();
+        const { error } = await supabase.auth.signUp({
           email: normalizedEmail,
-          passwordHash: "supabase-managed",
-        })
-        .returning();
-      await createSession(user.id);
-      return Response.json({
-        user: { id: user.id, name: user.name, email: user.email, plan: user.plan },
-        provider: "supabase",
-      });
+          password: String(password),
+          options: { data: { name: displayName } },
+        });
+        if (error) {
+          console.warn(
+            "[auth] Supabase sign-up failed, falling back to local registration:",
+            error.message
+          );
+        } else {
+          registered = true;
+        }
+      } catch (err) {
+        console.warn(
+          "[auth] Supabase unreachable, falling back to local registration:",
+          err instanceof Error ? err.message : err
+        );
+      }
+
+      if (registered) {
+        // Mirror the profile locally for plan/subscription tracking.
+        const [user] = await db
+          .insert(users)
+          .values({
+            name: displayName,
+            email: normalizedEmail,
+            passwordHash: "supabase-managed",
+          })
+          .returning();
+        const sessionToken = await createSession(user.id);
+        return Response.json({
+          user: { id: user.id, name: user.name, email: user.email, plan: user.plan },
+          provider: "supabase",
+          sessionToken,
+        });
+      }
+      // Otherwise fall through to local registration below.
     }
 
     // ── Local auth fallback ─────────────────────────────────────────
@@ -67,10 +88,11 @@ export async function POST(req: Request) {
         passwordHash: hashPassword(String(password)),
       })
       .returning();
-    await createSession(user.id);
+    const sessionToken = await createSession(user.id);
     return Response.json({
       user: { id: user.id, name: user.name, email: user.email, plan: user.plan },
       provider: "local",
+      sessionToken,
     });
   } catch (e) {
     console.error(e);

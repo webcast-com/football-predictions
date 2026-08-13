@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { authFetch } from "@/lib/client-auth";
 
 type Me = {
   plan: string;
@@ -21,7 +22,7 @@ function PremiumInner() {
   const [message, setMessage] = useState<{ type: "ok" | "err" | "info"; text: string } | null>(null);
 
   async function loadMe() {
-    const data = await fetch("/api/auth/me").then((r) => r.json());
+    const data = await authFetch("/api/auth/me").then((r) => r.json());
     setMe(data.user);
   }
 
@@ -34,7 +35,7 @@ function PremiumInner() {
     const reference = params.get("reference") || params.get("trxref");
     if (params.get("verify") === "1" && reference) {
       setMessage({ type: "info", text: "Verifying your payment…" });
-      fetch(`/api/paystack/verify?reference=${encodeURIComponent(reference)}`)
+      authFetch(`/api/paystack/verify?reference=${encodeURIComponent(reference)}`)
         .then((r) => r.json())
         .then((d) => {
           if (d.success) {
@@ -52,7 +53,7 @@ function PremiumInner() {
     setLoading(true);
     setMessage(null);
     try {
-      const res = await fetch("/api/paystack/initialize", {
+      const res = await authFetch("/api/paystack/initialize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ plan: "premium-24h" }),
@@ -65,7 +66,7 @@ function PremiumInner() {
       if (res.status === 503) {
         // Paystack not configured — use demo upgrade so the flow is testable
         setMessage({ type: "info", text: "Paystack keys not set — completing in demo mode…" });
-        const demo = await fetch("/api/paystack/demo-upgrade", { method: "POST" });
+        const demo = await authFetch("/api/paystack/demo-upgrade", { method: "POST" });
         if (demo.ok) {
           setMessage({ type: "ok", text: "🎉 +24h Premium unlocked (demo mode)!" });
           loadMe();

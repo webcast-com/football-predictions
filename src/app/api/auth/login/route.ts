@@ -16,40 +16,59 @@ export async function POST(req: Request) {
     const normalizedEmail = String(email).toLowerCase().trim();
 
     // ── Supabase Auth path ──────────────────────────────────────────
+    // This is attempted first when Supabase is configured, but any failure
+    // (unreachable project, unknown user, invalid keys…) falls through to the
+    // built-in local auth below instead of failing the request. Supabase keys
+    // are optional configuration, and local accounts must stay able to log in.
     if (isSupabaseEnabled()) {
-      const supabase = getSupabase();
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: normalizedEmail,
-        password: String(password),
-      });
-      if (error || !data.user) {
-        return Response.json(
-          { error: "Invalid email or password." },
-          { status: 401 }
+      let supabaseUser: { user_metadata?: { name?: string } } | null = null;
+      try {
+        const supabase = getSupabase();
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: normalizedEmail,
+          password: String(password),
+        });
+        if (!error && data.user) {
+          supabaseUser = data.user;
+        } else {
+          console.warn(
+            "[auth] Supabase sign-in failed, falling back to local auth:",
+            error?.message
+          );
+        }
+      } catch (err) {
+        console.warn(
+          "[auth] Supabase unreachable, falling back to local auth:",
+          err instanceof Error ? err.message : err
         );
       }
-      // Mirror/lookup the local profile (plan & payments live locally).
-      let rows = await db
-        .select()
-        .from(users)
-        .where(eq(users.email, normalizedEmail))
-        .limit(1);
-      if (rows.length === 0) {
-        rows = await db
-          .insert(users)
-          .values({
-            name: (data.user.user_metadata?.name as string) || normalizedEmail.split("@")[0],
-            email: normalizedEmail,
-            passwordHash: "supabase-managed",
-          })
-          .returning();
+
+      if (supabaseUser) {
+        // Mirror/lookup the local profile (plan & payments live locally).
+        let rows = await db
+          .select()
+          .from(users)
+          .where(eq(users.email, normalizedEmail))
+          .limit(1);
+        if (rows.length === 0) {
+          rows = await db
+            .insert(users)
+            .values({
+              name: supabaseUser.user_metadata?.name || normalizedEmail.split("@")[0],
+              email: normalizedEmail,
+              passwordHash: "supabase-managed",
+            })
+            .returning();
+        }
+        const user = rows[0];
+        const sessionToken = await createSession(user.id);
+        return Response.json({
+          user: { id: user.id, name: user.name, email: user.email, plan: user.plan },
+          provider: "supabase",
+          sessionToken,
+        });
       }
-      const user = rows[0];
-      await createSession(user.id);
-      return Response.json({
-        user: { id: user.id, name: user.name, email: user.email, plan: user.plan },
-        provider: "supabase",
-      });
+      // Otherwise fall through to the local auth path below.
     }
 
     // ── Local auth fallback ─────────────────────────────────────────
@@ -65,10 +84,11 @@ export async function POST(req: Request) {
         { status: 401 }
       );
     }
-    await createSession(user.id);
+    const sessionToken = await createSession(user.id);
     return Response.json({
       user: { id: user.id, name: user.name, email: user.email, plan: user.plan },
       provider: "local",
+      sessionToken,
     });
   } catch (e) {
     console.error(e);
