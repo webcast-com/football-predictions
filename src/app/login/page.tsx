@@ -27,21 +27,20 @@ export default function LoginPage() {
         setError(data.error || "Login failed.");
         return;
       }
-      // Keep the session token client-side. Some embedded previews block the
-      // session cookie (third-party cookie restrictions), so we send the
-      // token as an Authorization header on subsequent requests instead.
+      // Keep the session token client-side and send it on every request as an
+      // Authorization header — sessions are token-based, no cookies involved.
       if (data.sessionToken) {
         setSessionToken(data.sessionToken);
       }
-      // Confirm the session works before navigating, so a genuinely blocked
-      // session shows a clear message instead of a silent bounce.
+      // Confirm the session works before navigating, so a failure shows a
+      // clear message instead of a silent bounce.
       const me = await authFetch("/api/auth/me", { cache: "no-store" })
         .then((r) => r.json())
         .catch(() => null);
       if (!me?.user) {
         clearSessionToken();
         setError(
-          "Signed in, but the session could not be confirmed in this browser. Try opening the preview in a new tab, or a different browser."
+          "Signed in, but the session could not be confirmed in this browser. Try again or use a different browser."
         );
         return;
       }

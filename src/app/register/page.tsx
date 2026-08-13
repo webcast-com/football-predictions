@@ -28,8 +28,8 @@ export default function RegisterPage() {
         setError(data.error || "Registration failed.");
         return;
       }
-      // Keep the session token client-side in case the embedded preview
-      // blocks the session cookie (third-party cookie restrictions).
+      // Keep the session token client-side — sessions are token-based, no
+      // cookies involved.
       if (data.sessionToken) {
         setSessionToken(data.sessionToken);
       }
@@ -40,7 +40,7 @@ export default function RegisterPage() {
       if (!me?.user) {
         clearSessionToken();
         setError(
-          "Account created, but the session could not be confirmed in this browser. Try opening the preview in a new tab, or a different browser."
+          "Account created, but the session could not be confirmed in this browser. Try again or use a different browser."
         );
         return;
       }

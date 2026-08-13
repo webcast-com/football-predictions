@@ -14,11 +14,11 @@ type GateUser = {
 /**
  * Client-side auth gate for the dashboard.
  *
- * When the session cookie is unavailable (e.g. the app runs inside an embedded
- * preview that blocks third-party cookies), the server layout cannot resolve
- * the user from the cookie. This gate re-authenticates on the client using the
- * session token stored by the login page (sent as `Authorization: Bearer`) and
- * only then renders the dashboard shell + children.
+ * Sessions are token-based and the token lives client-side (sessionStorage),
+ * so the server cannot authenticate page loads itself. This gate
+ * re-authenticates on the client using the token (sent as
+ * `Authorization: Bearer`) and only then renders the dashboard shell +
+ * children; without a valid session it redirects to /login.
  */
 export default function DashboardGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -36,8 +36,7 @@ export default function DashboardGate({ children }: { children: React.ReactNode 
             email: d.user.email,
             premiumActive: Boolean(d.user.premiumActive),
           });
-          // Ensure demo data exists for token-authed sessions (the server
-          // layout would normally run the seed when it has the cookie).
+          // Ensure demo data exists for token-authed sessions.
           authFetch("/api/seed", { method: "POST" }).catch(() => {});
         } else {
           setUser(null);
