@@ -1,0 +1,27 @@
+{
+  "previewPort": 3000,
+  "healthPath": "/api/health",
+  "startCommand": "docker compose -f docker-compose.base44.yml up -d",
+  "secrets": [
+    {
+      "name": "PAYSTACK_SECRET_KEY",
+      "description": "Paystack live secret key — enables live payments + webhook verification. Without it, checkout runs in demo mode. Get it from the Paystack dashboard (Settings > API Keys).",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "NEXT_PUBLIC_SUPABASE_URL",
+      "description": "Supabase project URL — activates Supabase Auth + Edge Function calls. Without it, the app uses built-in local auth. Get it from the Supabase dashboard (Project Settings > API).",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      "description": "Supabase anon key — paired with the project URL. Get it from the Supabase dashboard (Project Settings > API).",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "SUPABASE_SERVICE_ROLE_KEY",
+      "description": "Supabase service role key (server-only) — used for admin calls and Edge Function invocation. Get it from the Supabase dashboard (Project Settings > API).",
+      "requiredAtBoot": false
+    }
+  ]
+}
