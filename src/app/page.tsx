@@ -1,5 +1,6 @@
 import Link from "next/link";
 import ROISection from "@/components/ROIChart";
+import OnboardingHero from "@/components/OnboardingHero";
 
 function Feature({ icon, title, desc }: { icon: string; title: string; desc: string }) {
   return (
@@ -38,38 +39,10 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Hero */}
+      {/* Hero (with first-time onboarding flow) */}
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute -top-24 left-1/2 h-96 w-[42rem] -translate-x-1/2 rounded-full bg-emerald-500/20 blur-[120px]" />
-        <div className="mx-auto max-w-6xl px-5 py-24 text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-xs font-medium text-emerald-300">
-            ⚡ Live data-driven football tips
-          </span>
-          <h1 className="mx-auto mt-6 max-w-3xl text-4xl font-black leading-tight text-white sm:text-6xl">
-            Win more with{" "}
-            <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">
-              smarter football predictions
-            </span>
-          </h1>
-          <p className="mx-auto mt-5 max-w-xl text-lg text-slate-400">
-            Expert tips across the world&apos;s top leagues. Start free, then unlock
-            premium VIP picks with high-confidence odds. Pay securely with Paystack.
-          </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <Link
-              href="/register"
-              className="rounded-xl bg-emerald-500 px-6 py-3 text-sm font-semibold text-[#0a0f1d] hover:bg-emerald-400"
-            >
-              Create free account
-            </Link>
-            <Link
-              href="/login"
-              className="rounded-xl border border-white/15 px-6 py-3 text-sm font-semibold text-white hover:bg-white/5"
-            >
-              View predictions
-            </Link>
-          </div>
-        </div>
+        <OnboardingHero />
       </section>
 
       {/* ROI Chart */}
