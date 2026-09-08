@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ROISection from "@/components/ROIChart";
 
 function Feature({ icon, title, desc }: { icon: string; title: string; desc: string }) {
   return (
@@ -70,6 +71,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* ROI Chart */}
+      <ROISection />
 
       {/* Features */}
       <section className="mx-auto max-w-6xl px-5 pb-16">
