@@ -309,6 +309,49 @@ export default function ROISection() {
           Cumulative profit from all settled tips — 1 unit per bet.
         </p>
         <Chart data={data} />
+
+        {/* Recent activity — 5 most recent settled tips */}
+        <div className="mt-6 border-t border-white/10 pt-5">
+          <h3 className="mb-3 text-sm font-semibold text-white">Recent activity</h3>
+          <div className="space-y-2">
+            {data.points.slice(-5).reverse().map((p) => {
+              const won = p.status === "won";
+              const pl = won ? p.odds - 1 : -1;
+              return (
+                <div
+                  key={`${p.homeTeam}-${p.date}`}
+                  className="flex items-center gap-3 rounded-lg border border-white/5 bg-white/5 px-3 py-2.5"
+                >
+                  <span
+                    className={`grid h-8 w-8 shrink-0 place-items-center rounded-full text-xs font-bold ${
+                      won
+                        ? "bg-emerald-500/15 text-emerald-300"
+                        : "bg-red-500/15 text-red-300"
+                    }`}
+                  >
+                    {won ? "✓" : "✕"}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-white">
+                      {p.homeTeam} <span className="text-slate-500">vs</span> {p.awayTeam}
+                    </p>
+                    <p className="truncate text-xs text-slate-500">
+                      {p.league} · {p.tip} @ {p.odds.toFixed(2)}
+                    </p>
+                  </div>
+                  <span
+                    className={`shrink-0 text-sm font-bold ${
+                      pl >= 0 ? "text-emerald-400" : "text-red-400"
+                    }`}
+                  >
+                    {pl >= 0 ? "+" : ""}
+                    {pl.toFixed(2)}u
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </section>
   );
