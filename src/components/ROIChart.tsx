@@ -124,7 +124,7 @@ function Chart({ data }: { data: ROIData }) {
   return (
     <div>
       {/* Summary stats */}
-      <div className="mb-4 grid grid-cols-4 gap-2">
+      <div className="mb-4 grid grid-cols-3 gap-2 sm:grid-cols-5">
         <StatPill
           label="Profit"
           value={`${isPositive ? "+" : ""}${summary.totalProfit.toFixed(1)}u`}
@@ -137,6 +137,11 @@ function Chart({ data }: { data: ROIData }) {
         />
         <StatPill label="Tips" value={String(summary.tipsCount)} accent="text-white" />
         <StatPill label="Win rate" value={`${summary.winRate}%`} accent="text-teal-300" />
+        <StatPill
+          label="Avg yield"
+          value={`${summary.totalProfit >= 0 ? "+" : ""}${(summary.totalProfit / summary.tipsCount).toFixed(2)}u`}
+          accent={summary.totalProfit >= 0 ? "text-emerald-400" : "text-red-400"}
+        />
       </div>
 
       {/* Chart */}
