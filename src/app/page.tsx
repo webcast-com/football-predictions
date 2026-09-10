@@ -1,6 +1,20 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import ROISection from "@/components/ROIChart";
 import OnboardingHero from "@/components/OnboardingHero";
+
+export const metadata: Metadata = {
+  title: "Predikt — Football Predictions & Expert Tips",
+  description:
+    "Free daily football tips and premium VIP picks with verified ROI. Data-driven predictions you can trust — unlock all tips for 24 hours from KES 100.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "Predikt — Football Predictions & Expert Tips",
+    description:
+      "Free daily football tips and premium VIP picks with verified ROI. Data-driven predictions you can trust.",
+    type: "website",
+  },
+};
 
 function Feature({ icon, title, desc }: { icon: string; title: string; desc: string }) {
   return (
