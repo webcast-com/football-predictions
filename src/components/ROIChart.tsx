@@ -26,9 +26,21 @@ type ROIData = {
   };
 };
 
-function StatPill({ label, value, accent }: { label: string; value: string; accent: string }) {
+function StatPill({
+  label,
+  value,
+  accent,
+  className = "",
+}: {
+  label: string;
+  value: string;
+  accent: string;
+  className?: string;
+}) {
   return (
-    <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-center">
+    <div
+      className={`rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-center ${className}`}
+    >
       <p className="text-[10px] font-medium uppercase tracking-wide text-slate-400">{label}</p>
       <p className={`mt-0.5 text-lg font-black ${accent}`}>{value}</p>
     </div>
@@ -109,8 +121,12 @@ function Chart({ data }: { data: ROIData }) {
   const hoverX = hoverIdx !== null ? xAt(hoverIdx) : 0;
   const hoverY = hoverIdx !== null ? yAt(points[hoverIdx].cumulativeProfit) : 0;
 
-  // Tooltip position (clamp within container)
-  const tooltipLeft = Math.max(60, Math.min(width - 60, hoverX));
+  // Tooltip position — keep the w-44 (176px) tooltip fully inside the chart on small screens
+  const tooltipHalf = 88;
+  const tooltipLeft =
+    width <= tooltipHalf * 2
+      ? width / 2
+      : Math.max(tooltipHalf, Math.min(width - tooltipHalf, hoverX));
   const isPositive = summary.totalProfit >= 0;
 
   if (points.length === 0) {
@@ -124,7 +140,7 @@ function Chart({ data }: { data: ROIData }) {
   return (
     <div>
       {/* Summary stats */}
-      <div className="mb-4 grid grid-cols-3 gap-2 sm:grid-cols-5">
+      <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-5">
         <StatPill
           label="Profit"
           value={`${isPositive ? "+" : ""}${summary.totalProfit.toFixed(1)}u`}
@@ -141,6 +157,7 @@ function Chart({ data }: { data: ROIData }) {
           label="Avg yield"
           value={`${summary.totalProfit >= 0 ? "+" : ""}${(summary.totalProfit / summary.tipsCount).toFixed(2)}u`}
           accent={summary.totalProfit >= 0 ? "text-emerald-400" : "text-red-400"}
+          className="col-span-2 sm:col-span-1"
         />
       </div>
 
@@ -289,10 +306,10 @@ export default function ROISection() {
   if (!data) {
     return (
       <section className="mx-auto max-w-6xl px-5 py-12">
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">
           <div className="skeleton mb-4 h-6 w-48 rounded" />
-          <div className="mb-4 grid grid-cols-4 gap-2">
-            {Array.from({ length: 4 }).map((_, i) => (
+          <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-5">
+            {Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="skeleton h-14 rounded-xl" />
             ))}
           </div>
@@ -306,7 +323,7 @@ export default function ROISection() {
 
   return (
     <section className="mx-auto max-w-6xl px-5 py-12">
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">
         <div className="mb-1 flex items-center gap-2">
           <h2 className="text-lg font-bold text-white">📈 Verified ROI</h2>
         </div>
@@ -316,7 +333,7 @@ export default function ROISection() {
         <Chart data={data} />
 
         {/* Recent activity — 5 most recent settled tips */}
-        <div className="mt-6 border-t border-white/10 pt-5">
+        <div className="mt-5 border-t border-white/10 pt-5 sm:mt-6">
           <h3 className="mb-3 text-sm font-semibold text-white">Recent activity</h3>
           <div className="space-y-2">
             {data.points.slice(-5).reverse().map((p) => {
@@ -325,7 +342,7 @@ export default function ROISection() {
               return (
                 <div
                   key={`${p.homeTeam}-${p.date}`}
-                  className="flex items-center gap-3 rounded-lg border border-white/5 bg-white/5 px-3 py-2.5"
+                  className="flex items-center gap-2.5 rounded-lg border border-white/5 bg-white/5 px-2.5 py-2.5 sm:gap-3 sm:px-3"
                 >
                   <span
                     className={`grid h-8 w-8 shrink-0 place-items-center rounded-full text-xs font-bold ${
